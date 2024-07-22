@@ -13,14 +13,19 @@ app.get("/manga", (req, res) => {
 });
 
 // insert title
-//  TODO: "unit testing for post('/post')"
 app.post("/title", async (req, res) => {
   const client = await pool.connect();
   // console.log(client);
   try {
     // get request input from client
-    const { first_name, last_name, title_name } = req.body;
-    // console.log(req.body);
+    const {
+      author_first_name,
+      author_last_name,
+      title_name,
+      illustrator_first_name,
+      illustrator_last_name,
+    } = req.body;
+    console.log(req.body);
     await client.query("BEGIN");
 
     // Insert new title
@@ -34,15 +39,15 @@ app.post("/title", async (req, res) => {
     // Insert author
     const newAuthor = await client.query(
       "INSERT INTO author (first_name, last_name) VALUES ($1, $2) RETURNING author_id",
-      [first_name, last_name],
+      [author_first_name, author_last_name],
     );
     const newAuthorID = newAuthor.rows[0].author_id;
     // console.log(newAuthorID);
 
-    // Insert author
+    // Insert illustrator
     const newIllustrator = await client.query(
       "INSERT INTO illustrator (first_name, last_name) VALUES ($1, $2) RETURNING illustrator_id",
-      [first_name, last_name],
+      [illustrator_first_name, illustrator_last_name],
     );
     const newIllustratorID = newIllustrator.rows[0].illustrator_id;
     // console.log(newIllustratorID);
@@ -59,11 +64,15 @@ app.post("/title", async (req, res) => {
       [newTitleID, newIllustratorID],
     );
 
-    // Insert TitleIllustrator
-
     await client.query("COMMIT");
 
-    res.json({ newTitle, newAuthor, titleauthor });
+    res.json({
+      newTitle,
+      newAuthor,
+      newIllustrator,
+      titleauthor,
+      titleillustrator,
+    });
   } catch (e) {
     /* handle error */
     client.query("ROLLBACK");
@@ -74,7 +83,6 @@ app.post("/title", async (req, res) => {
 });
 
 // create new series
-// TODO: unit test for post('/series')
 app.post("/series", async (req, res) => {
   const client = await pool.connect();
   try {
@@ -84,11 +92,12 @@ app.post("/series", async (req, res) => {
       series_language,
       series_status,
       publisher_name,
-      first_name,
-      last_name,
+      translator_first_name,
+      translator_last_name,
       country,
       title_id,
     } = req.body;
+    console.log(req.body);
     await client.query("BEGIN");
 
     // Insert Publisher
@@ -97,7 +106,6 @@ app.post("/series", async (req, res) => {
       [publisher_name, country],
     );
     const publisherID = newPublisher.rows[0].publisher_id;
-    console.log(publisherID);
 
     // Insert Series
     const newSeries = await client.query(
@@ -105,14 +113,12 @@ app.post("/series", async (req, res) => {
       [series_edition, series_language, series_status, title_id, publisherID],
     );
     const seriesID = newSeries.rows[0].series_id;
-    console.log(seriesID);
 
     const newTranslator = await client.query(
       "INSERT INTO translator (first_name, last_name) VALUES ($1, $2) RETURNING translator_id",
-      [first_name, last_name],
+      [translator_first_name, translator_last_name],
     );
     const translatorID = newTranslator.rows[0].translator_id;
-    console.log(translatorID);
 
     const seriestranslator = await client.query(
       "INSERT INTO seriestranslator (series_id, translator_id) VALUES ($1, $2)",
@@ -120,6 +126,7 @@ app.post("/series", async (req, res) => {
     );
 
     client.query("COMMIT");
+    res.json({ newPublisher, newSeries, newTranslator, seriestranslator });
   } catch (e) {
     /* handle error */
     client.query("ROLLBACK");
@@ -127,6 +134,30 @@ app.post("/series", async (req, res) => {
   } finally {
     /* be executed regardless of the try / catch result*/
     client.release();
+  }
+});
+
+app.post("/volume", (req, res) => {
+  try {
+    const {
+      isbn_no,
+      volume_no,
+      volume_name,
+      volume_cover,
+      publish_date,
+      series_id,
+    } = req.body;
+
+    const newVolume = pool.query(
+      "INSERT INTO volume (isbn, volume_no, volume_name, volume_cover, publish_date, series_id) VALUES ($1, $2, $3, $4, $5, $6)",
+      [isbn_no, volume_no, volume_name, volume_cover, publish_date, series_id],
+    );
+
+    res.json({newVolume});
+  } catch (e) {
+    /* handle error */
+    pool.query("ROLLBACK");
+    console.log(e.message);
   }
 });
 
