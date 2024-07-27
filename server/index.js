@@ -12,7 +12,103 @@ app.get("/manga", (req, res) => {
   res.send(JSON.stringify(a));
 });
 
-// insert title
+// get all title
+app.get("/title", async (req, res) => {
+  try {
+    const title = await pool.query("SELECT * FROM title;");
+    console.log(title);
+    res.json({ title });
+  } catch (e) {
+    /* handle error */
+  }
+});
+
+// get title with specific id
+app.get("/title/:title_id", async (req, res) => {
+  const query = `
+    SELECT
+      t.title_name,
+      t.title_id,
+      STRING_AGG(DISTINCT CONCAT(a.first_name , ' ' , a.last_name), ', ') AS authors,
+      STRING_AGG(DISTINCT CONCAT(i.first_name , ' ' , i.last_name), ', ') AS illustrators
+    FROM
+      Title t
+    LEFT JOIN
+      TitleAuthor ta ON t.title_id = ta.title_id
+    LEFT JOIN
+      Author a ON ta.author_id = a.author_id
+    LEFT JOIN
+      TitleIllustrator ti ON t.title_id = ti.title_id
+    LEFT JOIN
+      Illustrator i ON ti.illustrator_id = i.illustrator_id
+    WHERE
+      t.title_id = $1
+    GROUP BY
+      t.title_id, t.title_name;
+
+  `;
+  try {
+    let reqTitleID = req.params.title_id;
+
+    const result = await pool.query(query, [reqTitleID]);
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: "Title not found" });
+    }
+    const title_info = result.rows[0];
+    console.log(title_info)
+    res.json({
+      title_id: title_info.title_id,
+      title_name: title_info.title_name,
+      authors: title_info.authors,
+      illustrators: title_info.illustrators,
+    });
+  } catch (e) {
+    /* handle error */
+  }
+});
+
+app.get("/series/:series_id", async (req, res) => {
+  const query = `  
+    SELECT
+      s.series_id,
+      s.series_edition,
+      s.series_language,
+      s.series_status,
+      p.publisher_name,
+      p.country,
+      STRING_AGG(DISTINCT CONCAT(tr.first_name, ' ', tr.last_name), ',') AS translators,
+      t.title_name
+    FROM 
+      Series s
+    LEFT JOIN
+      Publisher p ON s.publisher_id = p.publisher_id
+    LEFT JOIN
+      SeriesTranslator st ON s.series_id = st.series_id
+    LEFT JOIN
+      Translator tr ON st.translator_id = tr.translator_id
+    LEFT JOIN
+      Title t ON s.title_id = t.title_id
+    WHERE
+      s.series_id = $1
+    GROUP BY
+      s.series_id, s.series_edition, s.series_language, s.series_status, p.publisher_name, p.country, t.title_name;
+  `
+  try {
+    let reqSeriesID = req.params.series_id;
+    const result = await pool.query( query, [reqSeriesID]);
+    console.log(result)
+    if (result.rows.length === 0) {
+      return res.status(404).json({error: "Series Not Found"})
+    }
+    const series_info = result.rows[0]
+    console.log(series_info)
+    
+  } catch (e) {
+    /* handle error */
+  }
+});
+
+// post title
 app.post("/title", async (req, res) => {
   const client = await pool.connect();
   // console.log(client);
@@ -153,7 +249,7 @@ app.post("/volume", (req, res) => {
       [isbn_no, volume_no, volume_name, volume_cover, publish_date, series_id],
     );
 
-    res.json({newVolume});
+    res.json({ newVolume });
   } catch (e) {
     /* handle error */
     pool.query("ROLLBACK");
