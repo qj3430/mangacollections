@@ -30,7 +30,7 @@ app.get("/title/:title_id", async (req, res) => {
       t.title_name,
       t.title_id,
       STRING_AGG(DISTINCT CONCAT(a.first_name , ' ' , a.last_name), ', ') AS authors,
-      STRING_AGG(DISTINCT CONCAT(i.first_name , ' ' , i.last_name), ', ') AS illustrators
+      STRING_AGG(DISTINCT CONCAT(i.first_name , ' ' , i.last_name), ', ') AS illustrators,
     FROM
       Title t
     LEFT JOIN
@@ -45,8 +45,8 @@ app.get("/title/:title_id", async (req, res) => {
       t.title_id = $1
     GROUP BY
       t.title_id, t.title_name;
-
   `;
+
   try {
     let reqTitleID = req.params.title_id;
 
@@ -95,14 +95,14 @@ app.get("/series/:series_id", async (req, res) => {
   `
   try {
     let reqSeriesID = req.params.series_id;
-    const result = await pool.query( query, [reqSeriesID]);
+    const result = await pool.query(query, [reqSeriesID]);
     console.log(result)
     if (result.rows.length === 0) {
-      return res.status(404).json({error: "Series Not Found"})
+      return res.status(404).json({ error: "Series Not Found" })
     }
     const series_info = result.rows[0]
     console.log(series_info)
-    
+
   } catch (e) {
     /* handle error */
   }
@@ -111,6 +111,7 @@ app.get("/series/:series_id", async (req, res) => {
 // post title
 app.post("/title", async (req, res) => {
   const client = await pool.connect();
+
   // console.log(client);
   try {
     // get request input from client
