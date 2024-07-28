@@ -1,0 +1,44 @@
+/* Card List */
+.cardsList {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr); /* 5 cards per row */
+  gap: 10px; /* Spacing between cards */
+}
+
+.mangaListSection {
+  max-width: 100%;
+  width: 100%;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  padding: 0 10px;
+  margin-bottom: 20px;
+}
+
+@media (max-width: 1200px) {
+  .cardsList {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+@media (max-width: 992px) {
+  .cardsList {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .cardsList {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 576px) {
+  .cardsList {
+    grid-template-columns: 1fr;
+  }
+}
