@@ -15,9 +15,9 @@ app.get("/manga", (req, res) => {
 // get all title
 app.get("/title", async (req, res) => {
   try {
-    const title = await pool.query("SELECT * FROM title;");
-    console.log(title);
-    res.json({ title });
+    const results = await pool.query("SELECT * FROM title;");
+    console.log(results);
+    res.json(results.rows);
   } catch (e) {
     /* handle error */
   }
@@ -29,8 +29,9 @@ app.get("/title/:title_id", async (req, res) => {
     SELECT
       t.title_name,
       t.title_id,
-      STRING_AGG(DISTINCT CONCAT(a.first_name , ' ' , a.last_name), ', ') AS authors,
-      STRING_AGG(DISTINCT CONCAT(i.first_name , ' ' , i.last_name), ', ') AS illustrators,
+      t.title_cover_url,
+      a.author_name,
+      i.illustrator_name,
     FROM
       Title t
     LEFT JOIN
@@ -44,7 +45,7 @@ app.get("/title/:title_id", async (req, res) => {
     WHERE
       t.title_id = $1
     GROUP BY
-      t.title_id, t.title_name;
+      t.title_id, t.title_name, t.title_cover_url;
   `;
 
   try {
@@ -55,12 +56,13 @@ app.get("/title/:title_id", async (req, res) => {
       return res.status(404).json({ error: "Title not found" });
     }
     const title_info = result.rows[0];
-    console.log(title_info)
+    console.log(title_info);
     res.json({
       title_id: title_info.title_id,
       title_name: title_info.title_name,
-      authors: title_info.authors,
-      illustrators: title_info.illustrators,
+      title_cover_url: title_info.title_cover_url,
+      authors_name: title_info.authors_name,
+      illustrators_name: title_info.illustrators_name,
     });
   } catch (e) {
     /* handle error */
@@ -76,7 +78,7 @@ app.get("/series/:series_id", async (req, res) => {
       s.series_status,
       p.publisher_name,
       p.country,
-      STRING_AGG(DISTINCT CONCAT(tr.first_name, ' ', tr.last_name), ',') AS translators,
+      tr.translator_name,
       t.title_name
     FROM 
       Series s
@@ -92,17 +94,16 @@ app.get("/series/:series_id", async (req, res) => {
       s.series_id = $1
     GROUP BY
       s.series_id, s.series_edition, s.series_language, s.series_status, p.publisher_name, p.country, t.title_name;
-  `
+  `;
   try {
     let reqSeriesID = req.params.series_id;
     const result = await pool.query(query, [reqSeriesID]);
-    console.log(result)
+    console.log(result);
     if (result.rows.length === 0) {
-      return res.status(404).json({ error: "Series Not Found" })
+      return res.status(404).json({ error: "Series Not Found" });
     }
-    const series_info = result.rows[0]
-    console.log(series_info)
-
+    const series_info = result.rows[0];
+    console.log(series_info);
   } catch (e) {
     /* handle error */
   }
@@ -115,36 +116,31 @@ app.post("/title", async (req, res) => {
   // console.log(client);
   try {
     // get request input from client
-    const {
-      author_first_name,
-      author_last_name,
-      title_name,
-      illustrator_first_name,
-      illustrator_last_name,
-    } = req.body;
+    const { author_name, title_name, title_cover_url, illustrator_name } =
+      req.body;
     console.log(req.body);
     await client.query("BEGIN");
 
     // Insert new title
     const newTitle = await client.query(
-      "INSERT INTO title (title_name) VALUES ($1) RETURNING title_id;",
-      [title_name],
+      "INSERT INTO title (title_name, title_cover_url) VALUES ($1, $2) RETURNING title_id;",
+      [title_name, title_cover_url],
     );
     const newTitleID = newTitle.rows[0].title_id;
     // console.log(newTitleID);
 
     // Insert author
     const newAuthor = await client.query(
-      "INSERT INTO author (first_name, last_name) VALUES ($1, $2) RETURNING author_id",
-      [author_first_name, author_last_name],
+      "INSERT INTO author (author_name) VALUES ($1) RETURNING author_id",
+      [author_name],
     );
     const newAuthorID = newAuthor.rows[0].author_id;
     // console.log(newAuthorID);
 
     // Insert illustrator
     const newIllustrator = await client.query(
-      "INSERT INTO illustrator (first_name, last_name) VALUES ($1, $2) RETURNING illustrator_id",
-      [illustrator_first_name, illustrator_last_name],
+      "INSERT INTO illustrator (illustrator_name) VALUES ($1) RETURNING illustrator_id",
+      [illustrator_name],
     );
     const newIllustratorID = newIllustrator.rows[0].illustrator_id;
     // console.log(newIllustratorID);
@@ -189,8 +185,7 @@ app.post("/series", async (req, res) => {
       series_language,
       series_status,
       publisher_name,
-      translator_first_name,
-      translator_last_name,
+      translator_name,
       country,
       title_id,
     } = req.body;
@@ -212,8 +207,8 @@ app.post("/series", async (req, res) => {
     const seriesID = newSeries.rows[0].series_id;
 
     const newTranslator = await client.query(
-      "INSERT INTO translator (first_name, last_name) VALUES ($1, $2) RETURNING translator_id",
-      [translator_first_name, translator_last_name],
+      "INSERT INTO translator (translator_name) VALUES ($1) RETURNING translator_id",
+      [translator_name],
     );
     const translatorID = newTranslator.rows[0].translator_id;
 
