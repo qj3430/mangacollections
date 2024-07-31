@@ -4,26 +4,39 @@ import CardsList from "./Components/CardsList";
 
 function App() {
   const url = "http://localhost:8888/title";
-
   const [titles, setTitles] = useState([]);
-  // TODO: Add into titles array
-  // NOTE: use spread operator to perform append array
   const handleAddTitle = async (newTitle) => {
     try {
-      // TODO: insert into database
-      // NOTE: console log success the newTitle
-      console.log(newTitle);
-      //const res = await fetch(url, {
-      //  method: "POST",
-      //  headers: {"Content-Type": "application/json"},
-      //  body: JSON.strigify(newTitle)
-      //})
+
+      // Database Query
+      const titleData = {
+        title_name: newTitle.newTitle,
+        author_name: newTitle.authorName,
+        illustrator_name: newTitle.illustratorName,
+        title_cover_url: newTitle.coverURL,
+      };
+
+      const res = await fetch(url, {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify(titleData)
+      })
+
+      if (!res.ok) {
+        const errData = await res.text()
+        throw new Error(`Server error: ${errData}`)
+      }
+
+      const savedTitle = await res.json();
+      setTitles(prevTitles => [...prevTitles, savedTitle]);
+      console.log(res)
     } catch (err) {
       console.log(err.messages);
     }
   };
-
+  
   useEffect(() => {
+    // Everytime page is access
     const fetchTitles = async () => {
       try {
         const response = await fetch(url);
@@ -42,7 +55,6 @@ function App() {
     fetchTitles();
   }, []);
 
-  // TODO: Allow User to add manga title, series and volume
   return (
     <div className="App">
       <CardsList mangas={titles} onAddTitle={handleAddTitle} />

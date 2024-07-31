@@ -11,7 +11,6 @@ const CardsList = ({ mangas, onAddTitle }) => {
   }
   
   return (
-    // TODO: add new title 
     <div className="mangaListSection">
       <div className="header">
         <h2>My Collections</h2>

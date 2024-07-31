@@ -12,7 +12,7 @@ app.get("/manga", (req, res) => {
   res.send(JSON.stringify(a));
 });
 
-// get all title
+// NOTE: get all title
 app.get("/title", async (req, res) => {
   try {
     const results = await pool.query("SELECT * FROM title;");
@@ -23,7 +23,7 @@ app.get("/title", async (req, res) => {
   }
 });
 
-// get title with specific id
+// NOTE: get title with title_id
 app.get("/title/:title_id", async (req, res) => {
   const query = `
     SELECT
@@ -69,6 +69,7 @@ app.get("/title/:title_id", async (req, res) => {
   }
 });
 
+// NOTE: get series with series_id
 app.get("/series/:series_id", async (req, res) => {
   const query = `  
     SELECT
@@ -122,11 +123,11 @@ app.post("/title", async (req, res) => {
     await client.query("BEGIN");
 
     // Insert new title
-    const newTitle = await client.query(
+    const newTitleName = await client.query(
       "INSERT INTO title (title_name, title_cover_url) VALUES ($1, $2) RETURNING title_id;",
       [title_name, title_cover_url],
     );
-    const newTitleID = newTitle.rows[0].title_id;
+    const newTitleID = newTitleName.rows[0].title_id;
     // console.log(newTitleID);
 
     // Insert author
@@ -146,13 +147,13 @@ app.post("/title", async (req, res) => {
     // console.log(newIllustratorID);
 
     // Insert TitleAuthor
-    const titleauthor = await client.query(
+    await client.query(
       "INSERT INTO titleauthor (title_id, author_id) VALUES ($1, $2)",
       [newTitleID, newAuthorID],
     );
 
     // Insert TitleIllustrator
-    const titleillustrator = await client.query(
+    await client.query(
       "INSERT INTO titleillustrator (title_id, illustrator_id) VALUES ($1, $2)",
       [newTitleID, newIllustratorID],
     );
@@ -160,11 +161,11 @@ app.post("/title", async (req, res) => {
     await client.query("COMMIT");
 
     res.json({
-      newTitle,
-      newAuthor,
-      newIllustrator,
-      titleauthor,
-      titleillustrator,
+      title_id: newTitleID,
+      title_name: title_name,
+      title_cover_url: title_cover_url,
+      author_name: author_name,
+      illustrator_name: illustrator_name,
     });
   } catch (e) {
     /* handle error */

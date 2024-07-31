@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 const NewTitle = ({ onAddTitle, onClose }) => {
-  const [newTitle, setNewTitle] = useState("");
+  const [newTitleName, setNewTitleName] = useState("");
   const [authorName, setAuthorName] = useState("");
   const [illustratorName, setIllustratorName] = useState("");
   const [coverURL, setCoverURL] = useState("");
@@ -8,7 +8,7 @@ const NewTitle = ({ onAddTitle, onClose }) => {
   const handleSubmit = (e) => {
     e.preventDefault();
     const data = {
-      newTitle: newTitle,
+      newTitle: newTitleName,
       authorName: authorName,
       illustratorName: illustratorName,
       coverURL: coverURL,
@@ -26,8 +26,8 @@ const NewTitle = ({ onAddTitle, onClose }) => {
         <input
           id="new_title_name"
           placeholder="Type here..."
-          onChange={(e) => setNewTitle(e.target.value)}
-          value={newTitle}
+          onChange={(e) => setNewTitleName(e.target.value)}
+          value={newTitleName}
         />
         <label>Author Name: </label>
         <input
