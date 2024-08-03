@@ -1,14 +1,75 @@
-/*
-  TODO: Floating window design
-*/
+
+.popup-window {
+  position: absolute;
+  inset: 100px;
+  width: 480px;
+  height: 500px;
+  margin: 10px;
+  padding: 10px;
+  display: flex;
+  border: 4px solid var(--colorAccent);
+  border-radius: 8px;
+  background-color: var(--colorSecondary);
+  z-index: 100;
+}
+
 .popup-content {
-  background-color: var(--colorPrimary);
+  color: var(--colorPrimary);
+  font-family: "Inter", sans-serif;
   width: 100%;
   height: 100%;
-  padding: 1rem;
-  margin: 0.5rem;
-  display: flex;
+  margin: 10px;
+  flex-direction: column;
 }
-/*
-  TODO: Form design 
-*/
+
+.popup-content h2 {
+  font: var(--h2);
+}
+
+.popup-content form {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.new_input_field {
+  display: flex;
+  justify-content: space-around;
+  width: 100%;
+  margin: 8px;
+  align-items: center;
+}
+
+.new_input_field label {
+  margin-right: 10px;
+  text-align: right;
+  width: 150px
+}
+
+.new_input_field input[type=text] {
+  background-color: var(--colorSecondary);
+  height: 30px;
+  color: var(--colorPrimary);
+  border: 4px solid var(--colorPrimary);
+  border-radius: 4px;
+  outline: none; /* This will make sure outline is not diplaying and 
+                    will change with :focus */
+}
+
+.new_input_field input[type=text]:focus {
+  border: 4px solid var(--colorAccent);
+}
+
+.new_cta_button {
+  margin-top: 50px;
+  display: flex;
+  width: 100%;
+  flex-direction: row;
+  justify-content: space-around;
+}
+
+.new_cta_button button {
+  width: 150px;
+}
+

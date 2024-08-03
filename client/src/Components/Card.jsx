@@ -15,5 +15,6 @@ const Card = ({ titleName, imageUrl }) => {
     </div>
   );
 };
-
+// TODO: View more layout
+// TODO: Series 
 export default Card;
