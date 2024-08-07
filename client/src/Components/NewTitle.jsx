@@ -9,7 +9,7 @@ const NewTitle = ({ onAddTitle, onClose }) => {
   const handleSubmit = (e) => {
     e.preventDefault();
     const data = {
-      newTitle: newTitleName,
+      newTitleName: newTitleName,
       authorName: authorName,
       illustratorName: illustratorName,
       coverURL: coverURL,

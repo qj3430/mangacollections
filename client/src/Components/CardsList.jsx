@@ -10,6 +10,7 @@ const CardsList = ({ mangas, onAddTitle }) => {
     setShowForm(false)
   }
   
+  
   return (
     <div className="mangaListSection">
       <div className="header">
@@ -25,9 +26,10 @@ const CardsList = ({ mangas, onAddTitle }) => {
       <div className="cardsList">
         {mangas.map((manga, index) => (
           <Card
-            key={manga.title_id}
-            imageUrl={manga.title_cover_url}
-            titleName={manga.title_name}
+            key={index}
+            image_url={manga.title_cover_url}
+            title_name={manga.title_name}
+            title_id = {manga.title_id}
           />
         ))}
       </div>

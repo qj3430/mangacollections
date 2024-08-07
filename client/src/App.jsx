@@ -10,7 +10,7 @@ function App() {
 
       // Database Query
       const titleData = {
-        title_name: newTitle.newTitle,
+        title_name: newTitle.newTitleName,
         author_name: newTitle.authorName,
         illustrator_name: newTitle.illustratorName,
         title_cover_url: newTitle.coverURL,
