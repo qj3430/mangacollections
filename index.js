@@ -1,16 +1,25 @@
 const express = require("express");
 const cors = require("cors");
-const port = 8888;
+const PORT = process.env.PORT | 8888;
 const pool = require("./db");
+const path = require("path")
 
 const app = express();
 app.use(express.json());
 app.use(cors());
 
+app.use(express.static(path.join(__dirname, './client/build')));
+const fullPath = path.join(__dirname, './client/build/index.html')
+console.log(fullPath)
+app.get('*', (req, res) => {
+  res.sendFile(fullPath)
+})
+
 app.get("/manga", (req, res) => {
   const a = req.body;
   res.send(JSON.stringify(a));
 });
+
 
 // NOTE: get all title
 app.get("/title", async (req, res) => {
@@ -18,8 +27,9 @@ app.get("/title", async (req, res) => {
     const results = await pool.query("SELECT * FROM title;");
     console.log(results);
     res.json(results.rows);
-  } catch (e) {
+ } catch (e) {
     /* handle error */
+
   }
 });
 
@@ -254,11 +264,11 @@ app.post("/volume", (req, res) => {
   }
 });
 
-app.listen(port, (err) => {
+app.listen(PORT, (err) => {
   if (err) {
     console.error(`Error starting server: ${err}`);
     return;
   }
 
-  console.log(`Server is running on port ${port}`);
+  console.log(`Server is running on port ${PORT}`);
 });
