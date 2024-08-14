@@ -3,7 +3,7 @@ import "./App.css";
 import CardsList from "./Components/CardsList";
 
 function App() {
-  const url = "http://localhost:8888/title";
+  const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:8888'
   const [titles, setTitles] = useState([]);
   const handleAddTitle = async (newTitle) => {
     try {
@@ -16,7 +16,7 @@ function App() {
         title_cover_url: newTitle.coverURL,
       };
 
-      const res = await fetch(url, {
+      const res = await fetch(`${API_BASE_URL}/title`, {
         method: "POST",
         headers: {"Content-Type": "application/json"},
         body: JSON.stringify(titleData)
@@ -39,7 +39,7 @@ function App() {
     // Everytime page is access
     const fetchTitles = async () => {
       try {
-        const response = await fetch(url);
+        const response = await fetch(`${API_BASE_URL}/title`);
         console.log(response);
         if (!response.ok) {
           throw new Error("Network response was not ok");
